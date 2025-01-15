@@ -20,11 +20,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.myjar.jarassignment.R
 import com.myjar.jarassignment.data.model.ComputerItem
 import com.myjar.jarassignment.ui.vm.JarViewModel
 
@@ -43,7 +45,7 @@ fun AppNavigation(
         }
         composable("item_detail/{itemId}") { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString("itemId")
-            ItemDetailScreen(itemId = itemId)
+            ItemDetailScreen(itemId = itemId, viewModel = viewModel)
         }
     }
 }
@@ -66,13 +68,13 @@ fun ItemListScreen(
         item { SearchBar(viewModel = viewModel) }
         item { Spacer(modifier = Modifier.height(16.dp)) }
         items(filteredItems) { item ->
-                ItemCard(
-                    item = item,
-                    onClick = { onNavigateToDetail(item.id) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            ItemCard(
+                item = item,
+                onClick = { onNavigateToDetail(item.id) }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
-        if (!resultsFound.value) {
+        if (!resultsFound.value && searchQuery.value.isNotBlank()) {
             item { Text(text = "No results found") }
         }
     }
@@ -87,31 +89,46 @@ fun ItemCard(item: ComputerItem, onClick: () -> Unit) {
             .clickable { onClick() }
     ) {
         Text(text = item.name, fontWeight = FontWeight.Bold)
-        item.data?.color?.let { Text(text = "color: $it") }
-        item.data?.capacity?.let { Text(text = "capacity: $it") }
-        item.data?.price?.let { Text(text = "price: $it") }
-        item.data?.capacityGB?.let { Text(text = "capacityGB: $it") }
-        item.data?.screenSize?.let { Text(text = "screenSize: $it") }
-        item.data?.description?.let { Text(text = "description: $it") }
-        item.data?.generation?.let { Text(text = "generation: $it") }
-        item.data?.strapColour?.let { Text(text = "strapColour: $it") }
-        item.data?.caseSize?.let { Text(text = "caseSize: $it") }
-        item.data?.cpuModel?.let { Text(text = "cpuModel: $it") }
-        item.data?.hardDiskSize?.let { Text(text = "hardDiskSize: $it") }
+        item.data?.color?.let { Text(text = stringResource(R.string.color, it)) }
+        item.data?.capacity?.let { Text(text = stringResource(R.string.capacity, it)) }
+        item.data?.price?.let { Text(text = stringResource(R.string.price, it)) }
+        item.data?.capacityGB?.let { Text(text = stringResource(R.string.capacitygb_gb, it) ) }
+        item.data?.screenSize?.let { Text(text = stringResource(R.string.screensize_inch, it)) }
+        item.data?.description?.let { Text(text = stringResource(R.string.description, it)) }
+        item.data?.generation?.let { Text(text = stringResource(R.string.generation, it)) }
+        item.data?.strapColour?.let { Text(text = stringResource(R.string.strapcolour, it)) }
+        item.data?.caseSize?.let { Text(text = stringResource(R.string.casesize, it)) }
+        item.data?.cpuModel?.let { Text(text = stringResource(R.string.cpumodel, it)) }
+        item.data?.hardDiskSize?.let { Text(text = stringResource(R.string.harddisksize, it)) }
 
     }
 }
 
 @Composable
-fun ItemDetailScreen(itemId: String?) {
+fun ItemDetailScreen(modifier: Modifier = Modifier,itemId: String?, viewModel: JarViewModel) {
     // Fetch the item details based on the itemId
     // Here, you can fetch it from the ViewModel or repository
-    Text(
-        text = "Item Details for ID: $itemId",
-        modifier = Modifier
+    val item = viewModel.listStringData.collectAsState().value.find {
+        it.id == itemId
+    }
+    Column(
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
-    )
+    ) {
+        item?.name?.let { Text(text = it, fontWeight = FontWeight.Bold) }
+        item?.data?.color?.let { Text(text = stringResource(R.string.color, it)) }
+        item?.data?.capacity?.let { Text(text = stringResource(R.string.capacity, it)) }
+        item?.data?.price?.let { Text(text = stringResource(R.string.price, it)) }
+        item?.data?.capacityGB?.let { Text(text = stringResource(R.string.capacitygb_gb, it) ) }
+        item?.data?.screenSize?.let { Text(text = stringResource(R.string.screensize_inch, it)) }
+        item?.data?.description?.let { Text(text = stringResource(R.string.description, it)) }
+        item?.data?.generation?.let { Text(text = stringResource(R.string.generation, it)) }
+        item?.data?.strapColour?.let { Text(text = stringResource(R.string.strapcolour, it)) }
+        item?.data?.caseSize?.let { Text(text = stringResource(R.string.casesize, it)) }
+        item?.data?.cpuModel?.let { Text(text = stringResource(R.string.cpumodel, it)) }
+        item?.data?.hardDiskSize?.let { Text(text = stringResource(R.string.harddisksize, it)) }
+    }
 }
 
 @Composable
@@ -126,7 +143,8 @@ fun SearchBar(modifier: Modifier = Modifier, viewModel: JarViewModel) {
                 contentDescription = "Search Icon"
             )
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(8.dp),
         placeholder = { Text(text = "Search") },
         singleLine = true,
