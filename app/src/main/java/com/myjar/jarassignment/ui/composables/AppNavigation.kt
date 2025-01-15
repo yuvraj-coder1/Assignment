@@ -1,5 +1,6 @@
 package com.myjar.jarassignment.ui.composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -38,7 +44,7 @@ fun AppNavigation(
         composable("item_list") {
             ItemListScreen(
                 viewModel = viewModel,
-                onNavigateToDetail = { selectedItem -> navigate.value = selectedItem },
+                onNavigateToDetail = { selectedValue -> navController.navigate("item_detail/${selectedValue}") },
                 navigate = navigate,
                 navController = navController
             )
@@ -58,24 +64,31 @@ fun ItemListScreen(
     navController: NavHostController
 ) {
     val items = viewModel.listStringData.collectAsState()
+    val searchQuery = viewModel.searchQuery.collectAsState()
+    Log.d("items", "${items.value}")
+//    if (navigate.value.isNotBlank()) {
+//        val currRoute = navController.currentDestination?.route.orEmpty()
+//        if (!currRoute.contains("item_detail")) {
+//            navController.navigate("item_detail/${navigate.value}")
+//        }
+//    }
 
-    if (navigate.value.isNotBlank()) {
-        val currRoute = navController.currentDestination?.route.orEmpty()
-        if (!currRoute.contains("item_detail")) {
-            navController.navigate("item_detail/${navigate.value}")
-        }
-    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
+
         items(items.value) { item ->
-            ItemCard(
-                item = item,
-                onClick = { onNavigateToDetail(item.id) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            if (item.doesMatchSearchQuery(searchQuery.value)) {
+                ItemCard(
+                    item = item,
+                    onClick = { onNavigateToDetail(item.id) }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
         }
     }
 }
@@ -88,7 +101,19 @@ fun ItemCard(item: ComputerItem, onClick: () -> Unit) {
             .padding(8.dp)
             .clickable { onClick() }
     ) {
-        Text(text = item.name, fontWeight = FontWeight.Bold, color = Color.Transparent)
+        Text(text = item.name, fontWeight = FontWeight.Bold)
+        item.data?.color?.let { Text(text = "color: $it") }
+        item.data?.capacity?.let { Text(text = "capacity: $it") }
+        item.data?.price?.let { Text(text = "price: $it") }
+        item.data?.capacityGB?.let { Text(text = "capacityGB: $it") }
+        item.data?.screenSize?.let { Text(text = "screenSize: $it") }
+        item.data?.description?.let { Text(text = "description: $it") }
+        item.data?.generation?.let { Text(text = "generation: $it") }
+        item.data?.strapColour?.let { Text(text = "strapColour: $it") }
+        item.data?.caseSize?.let { Text(text = "caseSize: $it") }
+        item.data?.cpuModel?.let { Text(text = "cpuModel: $it") }
+        item.data?.hardDiskSize?.let { Text(text = "hardDiskSize: $it") }
+
     }
 }
 
@@ -103,3 +128,5 @@ fun ItemDetailScreen(itemId: String?) {
             .padding(16.dp)
     )
 }
+
+
