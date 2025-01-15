@@ -1,6 +1,5 @@
 package com.myjar.jarassignment.ui.composables
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,14 +16,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,15 +34,11 @@ fun AppNavigation(
     viewModel: JarViewModel,
 ) {
     val navController = rememberNavController()
-    val navigate = remember { mutableStateOf<String>("") }
-
     NavHost(modifier = modifier, navController = navController, startDestination = "item_list") {
         composable("item_list") {
             ItemListScreen(
                 viewModel = viewModel,
                 onNavigateToDetail = { selectedValue -> navController.navigate("item_detail/${selectedValue}") },
-                navigate = navigate,
-                navController = navController
             )
         }
         composable("item_detail/{itemId}") { backStackEntry ->
@@ -59,19 +52,12 @@ fun AppNavigation(
 fun ItemListScreen(
     viewModel: JarViewModel,
     onNavigateToDetail: (String) -> Unit,
-    navigate: MutableState<String>,
-    navController: NavHostController
 ) {
     val items = viewModel.listStringData.collectAsState()
     val searchQuery = viewModel.searchQuery.collectAsState()
-    Log.d("items", "${items.value}")
-//    if (navigate.value.isNotBlank()) {
-//        val currRoute = navController.currentDestination?.route.orEmpty()
-//        if (!currRoute.contains("item_detail")) {
-//            navController.navigate("item_detail/${navigate.value}")
-//        }
-//    }
-
+    val filteredItems = items.value.filter { it.doesMatchSearchQuery(searchQuery.value) }
+    val resultsFound = remember { mutableStateOf(false) }
+    resultsFound.value = (filteredItems.isNotEmpty() && searchQuery.value.isNotBlank())
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -79,16 +65,15 @@ fun ItemListScreen(
     ) {
         item { SearchBar(viewModel = viewModel) }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-
-        items(items.value) { item ->
-            if (item.doesMatchSearchQuery(searchQuery.value)) {
+        items(filteredItems) { item ->
                 ItemCard(
                     item = item,
                     onClick = { onNavigateToDetail(item.id) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-            }
-
+        }
+        if (!resultsFound.value) {
+            item { Text(text = "No results found") }
         }
     }
 }
