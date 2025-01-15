@@ -6,7 +6,11 @@ data class ComputerItem(
     val id: String,
     val name: String,
     val data: ItemData? = null
-)
+) {
+    fun doesMatchSearchQuery(query: String): Boolean {
+        return name.contains(query, ignoreCase = true)
+    }
+}
 
 data class ItemData(
     val color: String? = null,
@@ -21,3 +25,4 @@ data class ItemData(
     @SerializedName("CPU model") val cpuModel: String? = null,
     @SerializedName("Hard disk size") val hardDiskSize: String? = null
 )
+

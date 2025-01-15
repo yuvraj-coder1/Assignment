@@ -22,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -78,7 +77,8 @@ fun ItemListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
+        item { SearchBar(viewModel = viewModel) }
+        item { Spacer(modifier = Modifier.height(16.dp)) }
 
         items(items.value) { item ->
             if (item.doesMatchSearchQuery(searchQuery.value)) {
@@ -126,6 +126,26 @@ fun ItemDetailScreen(itemId: String?) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+    )
+}
+
+@Composable
+fun SearchBar(modifier: Modifier = Modifier, viewModel: JarViewModel) {
+    val searchQuery = viewModel.searchQuery.collectAsState()
+    OutlinedTextField(
+        value = searchQuery.value,
+        onValueChange = { viewModel.updateSearchQuery(it) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search Icon"
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+            .padding(8.dp),
+        placeholder = { Text(text = "Search") },
+        singleLine = true,
+        shape = MaterialTheme.shapes.medium
     )
 }
 
